@@ -1,3 +1,16 @@
+FILES OF INTEREST: 
+./public
+1.service-worker
+
+./src/components
+Buttons.tsx
+Images.tsx
+
+./src
+App.tsx
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

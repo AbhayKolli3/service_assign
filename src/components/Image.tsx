@@ -1,16 +1,13 @@
-import { useEffect } from "react"
+import { useEffect } from "react";
 
-type ImageProps={
-    source:string
-}
+type ImageProps = {
+  source: string;
+};
 
-
-
-export default function Image(props:ImageProps) {
-
-    return (
-        <div>
-            <img src={props.source}  />
-        </div>
-    )
+export default function Image(props: ImageProps) {
+  return (
+    <div>
+      <img src={props.source} />
+    </div>
+  );
 }

@@ -1,6 +1,6 @@
 /* eslint-disable no-restricted-globals */
 
-const CACHE_NAME="V4"
+const CACHE_NAME = "V4";
 const URLArr = [
   "https://images.unsplash.com/photo-1541963463532-d68292c34b19?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Ym9va3xlbnwwfHwwfHx8MA%3D%3D",
   "https://images.unsplash.com/photo-1479660095429-2cf4e1360472?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxleHBsb3JlLWZlZWR8MXx8fGVufDB8fHx8fA%3D%3D",
@@ -18,133 +18,87 @@ const URLArr = [
   "https://images.pexels.com/photos/604671/pexels-photo-604671.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
   "https://images.pexels.com/photos/326055/pexels-photo-326055.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
   "https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500",
-
 ];
 
-
-class Cache{
-
-
-  constructor(){
-    this.name=CACHE_NAME
-
-   
-}
-buildCurrWindow(curr){
-  let temp=[]
-  for (let i = curr-5 ; i <= curr+5; i++) {
-
-    if(i<0){
-      temp.push(URLArr.length+i)
-    }
-    else if(i>=URLArr.length){
-      temp.push(i%URLArr.length)
-    }
-    else{
-      temp.push(i)
+class Cache {
+  constructor() {
+    this.name = CACHE_NAME;
+  }
+  buildCurrWindow(curr) {
+    let temp = [];
+    for (let i = curr - 5; i <= curr + 5; i++) {
+      if (i < 0) {
+        temp.push(URLArr.length + i);
+      } else if (i >= URLArr.length) {
+        temp.push(i % URLArr.length);
+      } else {
+        temp.push(i);
+      }
     }
 
+    return temp;
+  }
+  async getImage(request) {
+    const curr = URLArr.indexOf(request);
+    const currWindow = this.buildCurrWindow(curr);
+    console.log("current window", currWindow);
+
+    for (const val of currWindow) {
+      let res = await this.checkCache(URLArr[val]);
+      if (!res) {
+        console.log("adding ", val);
+        await this.toCache(URLArr[val]);
+      }
+    }
+    await this.deleteFromCache(currWindow);
+    const finalRes = await this.checkCache(request);
+    return finalRes;
   }
 
-  return temp
-}
-async getImage(request){
-  const curr=URLArr.indexOf(request)
-  const currWindow=this.buildCurrWindow(curr)
-  console.log("current window",currWindow)
+  async deleteFromCache(currWindow) {
+    const cache = await caches.open(this.name);
+    const keys = await cache.keys();
+    for (const key of keys) {
+      let tempIdx = URLArr.indexOf(key.url);
 
-  for (const val of currWindow){
-
-    let res=await this.checkCache(URLArr[val])
-    if(!res){
-      console.log("adding ",val)
-      await this.toCache(URLArr[val])
-
+      if (!currWindow.includes(tempIdx)) {
+        console.log(`deleting ${tempIdx}`);
+        await cache.delete(key);
+      } else {
+      }
     }
   }
-  await this.deleteFromCache(currWindow)
-  const finalRes=await this.checkCache(request)
-  return finalRes
 
-}
-
-async deleteFromCache(currWindow){
-
-  const cache = await caches.open(this.name);
-  const keys=await cache.keys();
-  for ( const key of keys){
-    let tempIdx=URLArr.indexOf(key.url)
-
-    if(!currWindow.includes(tempIdx)){
-      console.log(`deleting ${tempIdx}`)
-      await cache.delete(key)
-
-
+  async toCache(request) {
+    const cache = await caches.open(this.name);
+    const response = await fetch(request);
+    await cache.put(request, response);
+  }
+  async checkCache(request) {
+    const cache = await caches.open(this.name);
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      console.log("found in cache");
+      return cachedResponse;
+    } else {
+      return false;
     }
-    else{
-
-    }
-
   }
-
-
 }
-
-async toCache(request){
-
-  const cache = await caches.open(this.name);
-  const response = await fetch(request);
-  await cache.put(request, response);
-}
-async checkCache(request){
-
-  const cache = await caches.open(this.name);
-  const cachedResponse = await cache.match(request);
-  if (cachedResponse) {
-    console.log("found in cache")
-    return cachedResponse;
-  }
-  else{
-    return false
-  }
-
-}
-
-
-
-
-
-
-
-
-  
-
-
-
-
-};
-
 
 const ourCache = new Cache();
 
-self.addEventListener('install', (event) => {
-  console.log("installed service worker")
-
-})
-self.addEventListener('fetch',async (event) => {
-
-  console.log("caught ", event.request.url)
-  if(URLArr.includes(event.request.url)){
-    event.respondWith(ourCache.getImage(event.request.url))
-    
-
+self.addEventListener("install", (event) => {
+  console.log("installed service worker");
+});
+self.addEventListener("fetch", async (event) => {
+  console.log("caught ", event.request.url);
+  if (URLArr.includes(event.request.url)) {
+    event.respondWith(ourCache.getImage(event.request.url));
+  } else {
+    console.log("not found in cache");
   }
-  else{
-    console.log("not found in cache")
-
-  }
-})
-self.addEventListener('activate', (event) => {  
-  console.log("activated service worker")
-
-})
+});
+self.addEventListener("activate", (event) => {
+  console.log("activated service worker");
+});
