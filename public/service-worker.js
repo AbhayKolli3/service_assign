@@ -3,11 +3,11 @@
 const CACHE_NAME = "V4";
 let URLArr = null;
 
-class Cache {
+class ImageCache {
   constructor() {
     this.name = CACHE_NAME;
   }
-  buildCurrWindow(curr) {
+  currIdxWindow(curr) {
     let temp = [];
     for (let i = curr - 5; i <= curr + 5; i++) {
       if (i < 0) {
@@ -23,7 +23,7 @@ class Cache {
   }
   async getImage(request) {
     const curr = URLArr.indexOf(request);
-    const currWindow = this.buildCurrWindow(curr);
+    const currWindow = this.currIdxWindow(curr);
     console.log("current window", currWindow);
 
     for (const val of currWindow) {
@@ -77,11 +77,7 @@ self.addEventListener("install", (event) => {
 self.addEventListener("fetch", async (event) => {
   console.log("catching ", event.request.url);
   if (URLArr != null) {
-    if (URLArr.includes(event.request.url)) {
-      event.respondWith(ourCache.getImage(event.request.url));
-    } else {
-      console.log("not an img");
-    }
+    console.log("database ready")
   } else {
     console.log("data base not ready yet");
   }
@@ -91,6 +87,13 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("message", (event) => {
-  URLArr = event.data;
-  console.log("data base ready");
+  if (typeof(event.data)== "string"){
+    event.source.postMessage(ourCache.getImage(event.request.url))
+    
+  }
+  else{
+    URLArr = event.data;
+    console.log("data base ready");
+  }
+
 });

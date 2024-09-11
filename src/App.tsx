@@ -7,13 +7,13 @@ import { URLArr } from "./images";
 function App() {
   const [idx, setIdx] = useState(Math.floor(URLArr.length / 2));
   function changeIdx(i: string) {
-    if (i == "+") {
+    if (i === "+") {
       if (idx + 1 == URLArr.length) {
         setIdx(0);
       } else {
         setIdx(idx + 1);
       }
-    } else if (i == "-") {
+    } else if (i === "-") {
       if (idx - 1 < 0) {
         setIdx(URLArr.length - 1);
       } else {

@@ -4,15 +4,14 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import registerServiceWorker from "./serviceWorkerRegistration";
-import createDB from "./db";
 import { URLArr } from "./images";
-import addEventListeners from "./event";
+
 const root = ReactDOM.createRoot(
   document.getElementById("root") as HTMLElement
 );
 
 navigator.serviceWorker.controller?.postMessage(URLArr);
-addEventListeners(URLArr);
+
 
 registerServiceWorker();
 root.render(
