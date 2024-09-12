@@ -69,31 +69,45 @@ class ImageCache {
   }
 }
 
-const ourCache = new Cache();
+const ourCache = new ImageCache();
 self.addEventListener("install", (event) => {
   console.log("installed service worker");
 });
 
 self.addEventListener("fetch", async (event) => {
   console.log("catching ", event.request.url);
-  if (URLArr != null) {
-    console.log("database ready")
+  if (event.request.url.includes("http://localhost:3000")) {
+    console.log("not an img");
   } else {
-    console.log("data base not ready yet");
+    if (URLArr != null) {
+      console.log("database ready");
+    } else {
+      console.log("data base not ready yet");
+    }
   }
 });
 self.addEventListener("activate", (event) => {
   console.log("activated service worker");
 });
 
-self.addEventListener("message", (event) => {
-  if (typeof(event.data)== "string"){
-    event.source.postMessage(ourCache.getImage(event.request.url))
-    
-  }
-  else{
+addEventListener("message", async (event) => {
+
+  console.log("received message from main thread");
+  console.log(event.data);
+
+  if (typeof event.data == "string") {
+    console.log("it is a url request");
+    if (URLArr === null) {
+      console.log("database not ready");
+    } else {
+      let temp = await ourCache.getImage(event.data);
+      temp = await temp.blob();
+
+      console.log(temp, "is what was sent with type");
+      event.source.postMessage(temp);
+    }
+  } else {
     URLArr = event.data;
     console.log("data base ready");
   }
-
 });
