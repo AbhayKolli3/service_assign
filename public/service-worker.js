@@ -95,7 +95,7 @@ addEventListener("message", async (event) => {
   console.log("received message from main thread");
   console.log(event.data);
 
-  if (typeof event.data == "string") {
+  if (typeof event.data === "string") {
     console.log("it is a url request");
     if (URLArr === null) {
       console.log("database not ready");

@@ -10,11 +10,12 @@ const handleMessage = (event: MessageEvent) => {
   console.log(event.data, " received on main thread");
   res = URL.createObjectURL(event.data);
 };
-navigator.serviceWorker.addEventListener("message", handleMessage);
 
 export default function Image(props: ImageProps) {
   navigator.serviceWorker.controller?.postMessage(props.source);
-
+  useEffect(() => {
+    navigator.serviceWorker.addEventListener("message", handleMessage);
+  }, []);
   return (
     <div>
       <img src={res} />
